@@ -1,0 +1,62 @@
+{
+  "chatgpt": {
+    "name": "ChatGPT",
+    "category": "general",
+    "tiers": {
+      "plus": { "pricePerSeat": 20, "minSeats": 1 },
+      "team": { "pricePerSeat": 25, "minSeats": 2 },
+      "enterprise": { "pricePerSeat": 60, "minSeats": 150 }
+    },
+    "credexDiscountPrice": 45 
+  },
+  "claude": {
+    "name": "Anthropic Claude",
+    "category": "general",
+    "tiers": {
+      "pro": { "pricePerSeat": 20, "minSeats": 1 },
+      "team": { "pricePerSeat": 30, "minSeats": 5 },
+      "enterprise": { "pricePerSeat": 50, "minSeats": 100 }
+    },
+    "credexDiscountPrice": 35
+  },
+  "cursor": {
+    "name": "Cursor",
+    "category": "coding",
+    "tiers": {
+      "hobby": { "pricePerSeat": 0, "minSeats": 1 },
+      "pro": { "pricePerSeat": 20, "minSeats": 1 },
+      "business": { "pricePerSeat": 40, "minSeats": 1 }
+    },
+    "credexDiscountPrice": 30
+  },
+  "github_copilot": {
+    "name": "GitHub Copilot",
+    "category": "coding",
+    "tiers": {
+      "individual": { "pricePerSeat": 10, "minSeats": 1 },
+      "business": { "pricePerSeat": 19, "minSeats": 1 },
+      "enterprise": { "pricePerSeat": 39, "minSeats": 1 }
+    },
+    "credexDiscountPrice": 12
+  },
+  "gemini": {
+    "name": "Google Gemini",
+    "category": "general",
+    "tiers": {
+      "advanced": { "pricePerSeat": 20, "minSeats": 1 },
+      "business": { "pricePerSeat": 30, "minSeats": 1 },
+      "enterprise": { "pricePerSeat": 65, "minSeats": 100 }
+    },
+    "credexDiscountPrice": 45
+  },
+  "windsurf": {
+    "name": "Windsurf",
+    "category": "coding",
+    "tiers": {
+      "free": { "pricePerSeat": 0, "minSeats": 1 },
+      "pro": { "pricePerSeat": 20, "minSeats": 1 },
+      "team": { "pricePerSeat": 35, "minSeats": 1 }
+    },
+    "credexDiscountPrice": 25
+  }
+}
