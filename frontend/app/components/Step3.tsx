@@ -8,12 +8,15 @@ type ToolData = {
 };
 
 // Same type as before
-type PricingRecord = Record<string, {
-  name: string;
-  category: string;
-  tiers: Record<string, { pricePerSeat: number; minSeats: number }>;
-  credexDiscountPrice: number;
-}>;
+type PricingRecord = Record<
+  string,
+  {
+    name: string;
+    category: string;
+    tiers: Record<string, { pricePerSeat: number; minSeats: number }>;
+    credexDiscountPrice: number;
+  }
+>;
 
 type Step3Props = {
   selectedTools: string[];
@@ -37,7 +40,9 @@ export default function Step3({
   useEffect(() => {
     const fetchPricing = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/pricing");
+        const response = await fetch(
+          "${process.env.NEXT_PUBLIC_API_URL}/api/audit",
+        );
         const data = await response.json();
         setPricingData(data);
       } catch (error) {
@@ -64,14 +69,24 @@ export default function Step3({
     }
   }, [selectedTools, toolDetails, setToolDetails]);
 
-  const handleChange = (toolName: string, field: keyof ToolData, value: string) => {
+  const handleChange = (
+    toolName: string,
+    field: keyof ToolData,
+    value: string,
+  ) => {
     const updated = [...toolDetails];
     const index = updated.findIndex((tool) => tool.name === toolName);
 
     if (index !== -1) {
       updated[index] = { ...updated[index], [field]: value };
     } else {
-      updated.push({ name: toolName, plan: "", seats: "", monthlySpend: "", [field]: value });
+      updated.push({
+        name: toolName,
+        plan: "",
+        seats: "",
+        monthlySpend: "",
+        [field]: value,
+      });
     }
     setToolDetails(updated);
   };
@@ -84,16 +99,20 @@ export default function Step3({
   // UPDATED: Now uses the fetched state instead of an imported file
   const getToolTiers = (toolName: string) => {
     if (!pricingData) return []; // Return empty if data hasn't loaded yet
-    
+
     const toolKey = Object.keys(pricingData).find(
-      (key) => pricingData[key].name === toolName
+      (key) => pricingData[key].name === toolName,
     );
     return toolKey ? Object.keys(pricingData[toolKey].tiers) : [];
   };
 
   // Show a loading state if the backend hasn't responded yet
   if (!pricingData) {
-    return <div className="text-white text-center p-10">Loading configuration...</div>;
+    return (
+      <div className="text-white text-center p-10">
+        Loading configuration...
+      </div>
+    );
   }
   return (
     <div className="bg-slate-900 p-10 rounded-2xl shadow-2xl border border-slate-700 w-[900px]">
@@ -108,7 +127,7 @@ export default function Step3({
       {selectedTools.map((tool) => {
         const toolInfo = toolDetails.find((t) => t.name === tool);
         const annualCost = Number(toolInfo?.monthlySpend || 0) * 12;
-        
+
         // 4. Get the dynamic plans available for THIS specific tool
         const availablePlans = getToolTiers(tool);
 
@@ -125,7 +144,7 @@ export default function Step3({
               className="w-full p-3 rounded-xl bg-slate-700 text-white border border-slate-600 mb-3 focus:outline-none focus:ring-2 focus:ring-violet-500"
             >
               <option value="">Select Plan</option>
-              
+
               {/* 5. Dynamically map the plans from pricing.json */}
               {availablePlans.map((planKey) => (
                 <option key={planKey} value={planKey}>
@@ -147,14 +166,19 @@ export default function Step3({
               type="number"
               placeholder="Monthly Spend ($)"
               value={toolInfo?.monthlySpend || ""}
-              onChange={(e) => handleChange(tool, "monthlySpend", e.target.value)}
+              onChange={(e) =>
+                handleChange(tool, "monthlySpend", e.target.value)
+              }
               className="w-full p-3 rounded-xl bg-slate-700 text-white border border-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
 
             <div className="mt-4 bg-violet-900/30 border border-violet-700 rounded-xl p-4">
               <p className="text-violet-300 text-sm">Estimated Annual Cost</p>
               <p className="text-2xl font-bold text-white">
-                ${annualCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                $
+                {annualCost.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
               </p>
             </div>
           </div>
