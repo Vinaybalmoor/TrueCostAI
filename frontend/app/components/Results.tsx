@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import CostChart from "./CostChart";
+import { ReceiptItem } from "../page";
+
 type ToolData = {
   name: string;
   plan: string;
@@ -9,7 +14,7 @@ type ToolData = {
 type AnalysisResult = {
   totalMonthlyCost: number;
   totalAnnualCost: number;
-  recommendations: string[];
+  receipt: ReceiptItem[];
 };
 
 type ResultsProps = {
@@ -27,295 +32,126 @@ export default function Results({
   toolDetails,
   analysisResult,
 }: ResultsProps) {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const totalSpend = analysisResult.totalMonthlyCost;
-  const annualSpend = analysisResult.totalAnnualCost;
+  const annualSavings = analysisResult.totalAnnualCost;
 
-  const monthlySavings = totalSpend * 0.2;
-  const annualSavings = monthlySavings * 12;
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setIsSubmitting(true);
 
-  const wastePercentage = 20;
-  const optimizationScore = 100 - wastePercentage;
+    try {
+      const payload = {
+        email,
+        teamSize: Number(teamSize),
+        primaryUseCase,
+        tools: toolDetails,
+      };
+
+      // Call your backend; the backend detects the email and triggers MongoDB + Nodemailer
+      await fetch("http://localhost:8000/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      setIsUnlocked(true);
+    } catch (error) {
+      console.error("Failed to unlock:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div
-  className="
-    bg-slate-900
-    p-10
-    rounded-2xl
-    shadow-2xl
-    border
-    border-slate-700
-    max-w-6xl
-    w-full
-  "
->
-      {/* Header */}
-      <h1 className="text-4xl font-bold text-center text-white mb-2">
-        TRUECOST AI REPORT
+    <div className="bg-slate-900 p-10 rounded-2xl shadow-2xl border border-slate-700 max-w-6xl w-full">
+      <h1 className="text-4xl font-bold text-center text-white mb-8">
+        Your AI Spend Audit
       </h1>
 
-      <p className="text-center text-slate-400 mb-10">
-        AI Subscription Cost Optimization Dashboard
-      </p>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-        <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl text-center">
-          <h2 className="text-slate-400 font-semibold">
-            Monthly Spend
-          </h2>
-
-          <p className="text-3xl font-bold text-white mt-2">
-            ${totalSpend.toFixed(2)}
+      {/* Metrics - Always visible */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+          <p className="text-slate-400 font-medium mb-2">Total Monthly Waste</p>
+          <p className="text-5xl font-bold text-red-400">
+            ${totalSpend.toLocaleString()}
           </p>
         </div>
-{/* Cost Breakdown Chart */} 
-<CostChart toolDetails={toolDetails} />
-        <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl text-center">
-          <h2 className="text-slate-400 font-semibold">
-            Annual Spend
-          </h2>
-
-          <p className="text-3xl font-bold text-white mt-2">
-            ${annualSpend.toFixed(2)}
-          </p>
-        </div>
-
-        <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl text-center">
-          <h2 className="text-slate-400 font-semibold">
-            Potential Savings
-          </h2>
-
-          <p className="text-3xl font-bold text-green-400 mt-2">
-            ${annualSavings.toFixed(2)}
-          </p>
-        </div>
-
-        <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl text-center">
-          <h2 className="text-slate-400 font-semibold">
-            Waste %
-          </h2>
-
-          <p className="text-3xl font-bold text-yellow-400 mt-2">
-            {wastePercentage}%
-          </p>
-        </div>
-      </div>
-
-      {/* Optimization Score */}
-      <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl mb-8">
-        <h2 className="text-xl font-bold text-white mb-4">
-          Optimization Score
-        </h2>
-
-        <div className="w-full bg-slate-700 rounded-full h-4">
-          <div
-            className="bg-violet-500 h-4 rounded-full"
-            style={{
-              width: `${optimizationScore}%`,
-            }}
-          />
-        </div>
-
-        <p className="text-white mt-3 font-semibold">
-          {optimizationScore}/100
-        </p>
-      </div>
-
-      {/* Company Summary */}
-      <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-8">
-        <h2 className="text-xl font-bold text-white mb-4">
-          Company Summary
-        </h2>
-
-        <div className="space-y-2 text-slate-300">
-          <p>
-            Team Size:
-            <span className="text-white font-semibold ml-2">
-              {teamSize}
-            </span>
-          </p>
-
-          <p>
-            Primary Use Case:
-            <span className="text-white font-semibold ml-2 capitalize">
-              {primaryUseCase}
-            </span>
-          </p>
-
-          <p>
-            Selected Tools:
-            <span className="text-white font-semibold ml-2">
-              {selectedTools.join(", ")}
-            </span>
-          </p>
-        </div>
-      </div>
-
-      {/* Recommendations */}
-      <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-8">
-        <h2 className="text-xl font-bold text-white mb-4">
-          AI Recommendations
-        </h2>
-
-        <ul className="space-y-3">
-          {analysisResult.recommendations.map(
-            (item, index) => (
-              <li
-                key={index}
-                className="bg-green-900/20 border border-green-700 text-green-300 p-4 rounded-xl"
-              >
-                ✓ {item}
-              </li>
-            )
-          )}
-
-          <li className="bg-violet-900/20 border border-violet-700 text-violet-300 p-4 rounded-xl">
-            Estimated Annual Savings:
-            ${annualSavings.toFixed(2)}
-          </li>
-        </ul>
-      </div>
-
-      {/* Tool Breakdown */}
-      <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-8 overflow-x-auto">
-        <h2 className="text-xl font-bold text-white mb-4">
-          Tool Breakdown
-        </h2>
-
-        <table className="w-full">
-          <thead>
-            <tr className="bg-slate-700 text-white">
-              <th className="p-3 text-left">Tool</th>
-              <th className="p-3 text-left">Plan</th>
-              <th className="p-3 text-left">Seats</th>
-              <th className="p-3 text-left">
-                Monthly Spend
-              </th>
-              <th className="p-3 text-left">
-                Annual Cost
-              </th>
-              <th className="p-3 text-left">Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {toolDetails.map((tool) => {
-              const spend = Number(
-                tool.monthlySpend
-              );
-
-              const annualCost = spend * 12;
-
-              let status = (
-                <span className="text-green-400">
-                  Healthy
-                </span>
-              );
-
-              if (spend > totalSpend * 0.4) {
-                status = (
-                  <span className="text-red-400">
-                    Optimize
-                  </span>
-                );
-              } else if (
-                spend > totalSpend * 0.2
-              ) {
-                status = (
-                  <span className="text-yellow-400">
-                    Review
-                  </span>
-                );
-              }
-
-              return (
-                <tr
-                  key={tool.name}
-                  className="border-b border-slate-700 text-slate-300"
-                >
-                  <td className="p-3">
-                    {tool.name}
-                  </td>
-
-                  <td className="p-3">
-                    {tool.plan}
-                  </td>
-
-                  <td className="p-3">
-                    {tool.seats}
-                  </td>
-                  
-
-          
-<td className="p-3">
-  ${spend.toFixed(2)}
-</td>
-
-<td className="p-3">
-  ${annualCost.toLocaleString()}
-</td>
-
-
-
-                  <td className="p-3 font-semibold">
-                    {status}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Executive Insight */}
-      <div className="bg-violet-900/20 border border-violet-700 p-6 rounded-2xl mb-8">
-        <h2 className="text-xl font-bold text-white mb-4">
-          Executive Insight
-        </h2>
-
-        <p className="text-slate-300 leading-relaxed">
-          TRUECOST AI analyzed{" "}
-          <span className="font-bold text-white">
-            {selectedTools.length}
-          </span>{" "}
-          AI tools currently used by your team.
-
-          Your organization spends approximately{" "}
-          <span className="font-bold text-white">
-            ${annualSpend.toLocaleString()}
-          </span>{" "}
-          annually on AI subscriptions.
-
-          By optimizing overlapping tools and
-          reducing unnecessary spending, the
-          estimated savings could reach{" "}
-          <span className="font-bold text-green-400">
+        <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+          <p className="text-slate-400 font-medium mb-2">Potential Annual Savings</p>
+          <p className="text-5xl font-bold text-green-400">
             ${annualSavings.toLocaleString()}
-          </span>{" "}
-          per year.
-        </p>
+          </p>
+        </div>
       </div>
 
-      {/* Restart */}
-      <div className="text-center">
+      <CostChart toolDetails={toolDetails} />
+
+      {/* BLURRED RECOMMENDATIONS SECTION */}
+      <div className="relative">
+        <h2 className="text-2xl font-bold text-white mb-6">Itemized Recommendations</h2>
+        
+        <div className={`transition-all duration-700 ${!isUnlocked ? "blur-md select-none opacity-50 pointer-events-none" : ""}`}>
+          <div className="space-y-4">
+            {analysisResult.receipt.map((item, index) => (
+              <div key={index} className="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col gap-2">
+                <div className="flex justify-between items-center border-b border-slate-700 pb-3 mb-2">
+                  <h3 className="text-xl font-bold text-white capitalize">{item.tool}</h3>
+                  <span className="text-green-400 font-bold bg-green-900/30 px-3 py-1 rounded-full text-sm">
+                    Save ${item.savings}/mo
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                   <span className={`text-xs font-bold px-2 py-1 rounded uppercase tracking-wider
+                      ${item.action.includes("CANCEL") ? "bg-red-900/50 text-red-400 border border-red-700" : 
+                        item.action.includes("DOWNGRADE") ? "bg-yellow-900/50 text-yellow-400 border border-yellow-700" : 
+                        "bg-blue-900/50 text-blue-400 border border-blue-700"}`}
+                   >
+                     {item.action}
+                   </span>
+                </div>
+                <p className="text-slate-300 text-lg mt-2">{item.reason}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* The Soft Gate Overlay */}
+        {!isUnlocked && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center">
+            <form onSubmit={handleUnlock} className="bg-slate-950 p-8 rounded-2xl border border-violet-500 shadow-2xl text-center max-w-sm w-full">
+              <h3 className="text-xl font-bold text-white mb-4">Unlock Full Audit</h3>
+              <p className="text-slate-400 text-sm mb-6">Enter your work email to see the itemized breakdown and savings plan.</p>
+              <input 
+                type="email" 
+                required 
+                placeholder="name@company.com" 
+                className="w-full p-3 rounded mb-4 bg-slate-800 text-white border border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+              />
+              <button disabled={isSubmitting} className="w-full bg-violet-600 p-3 rounded text-white font-bold hover:bg-violet-700 transition">
+                {isSubmitting ? "Unlocking..." : "Unlock Insights"}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      <div className="text-center mt-16">
         <button
           onClick={() => {
             localStorage.clear();
             window.location.reload();
           }}
-          className="
-            bg-violet-600
-            hover:bg-violet-700
-            text-white
-            px-8
-            py-3
-            rounded-xl
-            font-semibold
-            transition
-          "
+          className="text-slate-400 hover:text-white transition"
         >
-          Start New Analysis
+          Start New Audit
         </button>
       </div>
     </div>

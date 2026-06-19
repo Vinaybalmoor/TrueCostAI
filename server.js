@@ -35,6 +35,9 @@ app.get("/api/available-tools", (req, res) => {
         res.status(500).json({ success: false, message: "Server error fetching tools", error: error.message });
     }
 });
+app.get('/api/pricing', (req, res) => {
+  res.status(200).json(pricingData);
+});
 app.post("/api/audit", calculateAudit);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

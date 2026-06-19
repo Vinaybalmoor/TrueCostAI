@@ -9,31 +9,30 @@ type Step2Props = {
 
 const tools = [
   {
-    name: "ChatGPT",
+    name: "ChatGPT", // Matches JSON perfectly
     logo: "/logos/chatgpt-logo-png.webp",
   },
   {
-    name: "Claude",
+    name: "Anthropic Claude", // UPDATED: Was "Claude"
     logo: "/logos/claude-ai-logo-png.webp",
   },
   {
-    name: "Gemini",
+    name: "Google Gemini", // UPDATED: Was "Gemini"
     logo: "/logos/Gemini_logo_PNG.png",
   },
   {
-    name: "Cursor",
+    name: "Cursor", // Matches JSON perfectly
     logo: "/logos/cursor-logo-png.png",
   },
   {
-    name: "Copilot",
+    name: "GitHub Copilot", // UPDATED: Was "Copilot"
     logo: "/logos/GitHub-Copilot-Logo-PNG.png",
   },
   {
-    name: "Perplexity",
-    logo: "/logos/perplexity-ai-logo-rounded-hd-free-png.webp",
+    name: "Windsurf", // UPDATED: Replaced "Perplexity" to match your pricing.json
+    logo: "/logos/perplexity-ai-logo-rounded-hd-free-png.webp", // You might want to update this logo path!
   },
 ];
-
 export default function Step2({
   selectedTools,
   setSelectedTools,

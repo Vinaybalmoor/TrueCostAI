@@ -7,7 +7,7 @@
       "team": { "pricePerSeat": 25, "minSeats": 2 },
       "enterprise": { "pricePerSeat": 60, "minSeats": 150 }
     },
-    "credexDiscountPrice": 45
+    "credexDiscountPrice": 45 
   },
   "claude": {
     "name": "Anthropic Claude",

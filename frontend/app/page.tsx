@@ -7,19 +7,19 @@ import Step2 from "./components/Step2";
 import Step3 from "./components/Step3";
 import Results from "./components/Results";
 
-type ToolData = {
-  name: string;
-  plan: string;
-  seats: string;
-  monthlySpend: string;
+export type ReceiptItem = {
+  tool: string;
+  action: string;
+  savings: number;
+  reason: string;
 };
 
-type AnalysisResult = {
+// Update this existing type
+export type AnalysisResult = {
   totalMonthlyCost: number;
   totalAnnualCost: number;
-  recommendations: string[];
+  receipt: ReceiptItem[]; // Changed from recommendations: string[]
 };
-
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -55,6 +55,9 @@ export default function Home() {
       );
     }
 
+    // Add this new type
+
+
     const savedAnalysis =
       localStorage.getItem(
         "analysisResults"
@@ -86,79 +89,60 @@ export default function Home() {
     toolDetails,
   ]);
 
-  const handleAnalyze = () => {
-    const totalMonthlyCost =
-      toolDetails.reduce(
-        (sum, tool) =>
-          sum +
-          Number(
-            tool.monthlySpend || 0
-          ),
-        0
-      );
-
-    const totalAnnualCost =
-      totalMonthlyCost * 12;
-
-    const recommendations: string[] =
-      [];
-
-    if (
-      selectedTools.includes(
-        "Cursor"
-      ) &&
-      selectedTools.includes(
-        "Copilot"
-      )
-    ) {
-      recommendations.push(
-        "Cursor and Copilot overlap for coding tasks. Consider using only one."
-      );
-    }
-
-    if (
-      selectedTools.includes(
-        "ChatGPT"
-      ) &&
-      selectedTools.includes(
-        "Claude"
-      )
-    ) {
-      recommendations.push(
-        "ChatGPT and Claude overlap for writing and research tasks."
-      );
-    }
-
-    if (
-      selectedTools.length >= 4
-    ) {
-      recommendations.push(
-        "Multiple AI tools detected. Review subscriptions for duplicate functionality."
-      );
-    }
-
-    if (
-      recommendations.length === 0
-    ) {
-      recommendations.push(
-        "Your AI stack looks reasonably optimized."
-      );
-    }
-
-    const result: AnalysisResult = {
-      totalMonthlyCost,
-      totalAnnualCost,
-      recommendations,
+  const handleAnalyze = async () => {
+    try {
+      const getNumericTeamSize = (sizeStr: string) => {
+      if (sizeStr === "1-5") return 5;
+      if (sizeStr === "6-20") return 20;
+      if (sizeStr === "21-50") return 50;
+      if (sizeStr === "51-100") return 100;
+      if (sizeStr === "100+") return 200;
+      return 0;
     };
+      // 1. Format the data to match exactly what your Node.js backend expects
+      const payload = {
+        teamSize: getNumericTeamSize(teamSize),
+        primaryUseCase: primaryUseCase,
+        tools: toolDetails.map((tool) => ({
+          name: tool.name,
+          plan: tool.plan.toLowerCase(), // Ensure this matches PRICING_DATA.json keys
+          seats: Number(tool.seats || 0),
+          monthlySpend: Number(tool.monthlySpend || 0),
+        })),
+      };
 
-    setAnalysisResult(result);
+      // 2. Call the TrueCost API (Ensure your backend is running on port 5000!)
+      const response = await fetch("http://localhost:8000/api/audit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    localStorage.setItem(
-      "analysisResults",
-      JSON.stringify(result)
-    );
+      const result = await response.json();
 
-    setShowResults(true);
+      if (result.success) {
+        // 3. Map the backend response into the shape the Results component expects
+        const finalResult: AnalysisResult = {
+          totalMonthlyCost: result.heroMetrics.totalMonthlyWaste,
+          totalAnnualCost: result.heroMetrics.totalAnnualSavings,
+          // Extract the specific reasons from the backend receipt array
+         receipt: result.receipt,
+        };
+
+        setAnalysisResult(finalResult);
+
+        // Save to local storage and show results
+        localStorage.setItem("analysisResults", JSON.stringify(finalResult));
+        setShowResults(true);
+      } else {
+        alert("Audit failed: " + result.message);
+      }
+    } catch (error) {
+      console.error("Failed to connect to backend:", error);
+      alert("Could not connect to the backend API. Is the server running?");
+    }
   };
 
   const progress =
@@ -229,21 +213,12 @@ export default function Home() {
         {currentStep === 3 &&
           !showResults && (
             <Step3
-              selectedTools={
-                selectedTools
-              }
-              toolDetails={
-                toolDetails
-              }
-              setToolDetails={
-                setToolDetails
-              }
-              onBack={() =>
-                setCurrentStep(2)
-              }
-              onAnalyze={
-                handleAnalyze
-              }
+              selectedTools={selectedTools}
+              // FIX: This prop was duplicated and had the wrong value
+              toolDetails={toolDetails} 
+              setToolDetails={setToolDetails}
+              onBack={() => setCurrentStep(2)}
+              onAnalyze={handleAnalyze}
             />
           )}
 

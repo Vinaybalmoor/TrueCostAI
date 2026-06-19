@@ -10,6 +10,8 @@ const nodemailer = require("nodemailer");
 const { validateInput, checkUseCaseAlignment, checkRedundancy, calculateOptimalTier } = require("../utils/auditRules");
 
 const calculateAudit = async (req, res) => {
+  // In your controller function
+
   if (!req.body || !req.body.tools || !Array.isArray(req.body.tools)) {
     return res.status(400).json({
       success: false,
@@ -27,9 +29,11 @@ const calculateAudit = async (req, res) => {
     const toolTruth = pricingData[toolKey];
 
     if (!toolTruth) return;
-
+const planKey = Object.keys(toolTruth.tiers).find(
+    key => key.toLowerCase() === toolInput.plan.toLowerCase()
+);
     // 1. Strict Server-Side Validation
-    const validation = validateInput(toolInput.monthlySpend, toolInput.seats, toolTruth.tiers[toolInput.plan]);
+    const validation = validateInput(toolInput.monthlySpend, toolInput.seats, toolTruth.tiers[planKey]);
     if (!validation.isValid) {
       console.warn(`Skipping tool ${toolInput.name}: ${validation.error}`);
       return; 
@@ -78,17 +82,21 @@ const calculateAudit = async (req, res) => {
   }
 
   // --- DATABASE SAVE ---
+  // --- DATABASE SAVE ---
   try {
-    if (req.body.email) {
+    // Only save if we actually have data we care about
+    if (teamSize && primaryUseCase) { 
       const newLead = new Lead({
-        email: req.body.email,
-        teamSize: teamSize,
+        email: req.body.email || "no-email@provided.com", // Provide a fallback if email is missing!
+        teamSize: Number(teamSize) || 1, // <--- BULLETPROOF FIX: Forces a valid number
         primaryUseCase: primaryUseCase,
         totalMonthlyWaste: totalMonthlyWaste,
         totalAnnualSavings: totalMonthlyWaste * 12,
         toolsAudited: tools,
       });
+      
       await newLead.save();
+      console.log("Lead saved successfully!");
     }
   } catch (dbError) {
     console.error("Failed to save lead:", dbError.message);
