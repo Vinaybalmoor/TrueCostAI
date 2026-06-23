@@ -7,13 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const { connectDB } = require("./db");
 
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "https://true-cost-ai-sable.vercel.app"],
-    methods: ["GET", "POST"],
-    credentials: true,
-  }),
-);
+app.use(cors());
 connectDB();
 app.use(express.json());
 app.get("/api/available-tools", (req, res) => {
@@ -32,13 +26,11 @@ app.get("/api/available-tools", (req, res) => {
       data: toolsList,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error fetching tools",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Server error fetching tools",
+      error: error.message,
+    });
   }
 });
 app.get("/api/pricing", (req, res) => {
