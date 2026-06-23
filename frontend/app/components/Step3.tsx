@@ -41,7 +41,7 @@ export default function Step3({
     const fetchPricing = async () => {
       try {
         const response = await fetch(
-          "${process.env.NEXT_PUBLIC_API_URL}/api/audit",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/audit`,
         );
         const data = await response.json();
         setPricingData(data);

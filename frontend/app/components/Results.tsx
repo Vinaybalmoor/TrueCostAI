@@ -3,7 +3,7 @@
 import { useState } from "react";
 import CostChart from "./CostChart";
 import { ReceiptItem } from "../page";
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 type ToolData = {
   name: string;
   plan: string;
@@ -53,7 +53,7 @@ export default function Results({
       };
 
       // Call your backend; the backend detects the email and triggers MongoDB + Nodemailer
-      await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/audit", {
+      await fetch(`${API_URL}/api/audit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
