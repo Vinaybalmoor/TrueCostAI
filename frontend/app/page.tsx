@@ -112,13 +112,16 @@ export default function Home() {
       };
 
       // 2. Call the TrueCost API (Ensure your backend is running on port 5000!)
-      const response = await fetch("http://localhost:8000/api/audit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL}/api/audit`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  }
+);
 
       const result = await response.json();
 
