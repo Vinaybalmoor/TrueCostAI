@@ -5,11 +5,11 @@ const cors = require("cors");
 const { calculateAudit } = require("./controllers/auditController");
 const app = express();
 const PORT = process.env.PORT || 5000;
-const {connectDB} = require('./db');
+const { connectDB } = require("./db");
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://true-cost-ai-sable.vercel.app"],
     methods: ["GET", "POST"],
     credentials: true,
   }),
@@ -17,25 +17,31 @@ app.use(
 connectDB();
 app.use(express.json());
 app.get("/api/available-tools", (req, res) => {
-    try {
-        // We only send the ID (the json key) and the formal Name.
-        // We do NOT send the pricing data itself to the frontend for security.
-        const toolsList = Object.keys(pricingData).map((key) => {
-            return {
-                id: key, // e.g., "github_copilot"
-                name: pricingData[key].name // e.g., "GitHub Copilot"
-            };
-        });
+  try {
+    // We only send the ID (the json key) and the formal Name.
+    // We do NOT send the pricing data itself to the frontend for security.
+    const toolsList = Object.keys(pricingData).map((key) => {
+      return {
+        id: key, // e.g., "github_copilot"
+        name: pricingData[key].name, // e.g., "GitHub Copilot"
+      };
+    });
 
-        res.status(200).json({
-            success: true,
-            data: toolsList
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Server error fetching tools", error: error.message });
-    }
+    res.status(200).json({
+      success: true,
+      data: toolsList,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server error fetching tools",
+        error: error.message,
+      });
+  }
 });
-app.get('/api/pricing', (req, res) => {
+app.get("/api/pricing", (req, res) => {
   res.status(200).json(pricingData);
 });
 app.post("/api/audit", calculateAudit);
